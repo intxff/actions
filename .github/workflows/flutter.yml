@@ -173,6 +173,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v5
         with:
           workflow: main.yml
+          repo: intxff/try-actions
           run_id: ${{ inputs.run_id }}
           name: ${{ format('libsingbox_macos_amd64_{0}', inputs.lib_version) }}
           github_token: ${{ secrets.ACTION_TOKEN }}
@@ -180,6 +181,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v5
         with:
           workflow: main.yml
+          repo: intxff/try-actions
           run_id: ${{ inputs.run_id }}
           name: ${{ format('libsingbox_macos_arm64_{0}', inputs.lib_version) }}
           github_token: ${{ secrets.ACTION_TOKEN }}
