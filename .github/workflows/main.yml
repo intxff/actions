@@ -1,0 +1,64 @@
+name: Build Sing Libraries
+on: 
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        type: string
+      zig_version:
+        required: true
+        type: choice
+        options:
+          - 0.11.0
+          - 0.12.0
+
+env:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows, linux, macos]
+        arch: [amd64, arm64]
+        exclude:
+          - platform: windows
+            arch: arm64
+        include:
+          - platform: android
+            arch: aar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: intxff/sing
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: ${{ inputs.zig_version }}
+      - name: go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.platform == 'android' && 'android/go.mod' || 'desktop/go.mod' }}
+          cache-dependency-path: ${{ matrix.platform == 'android' && 'android/go.sum' || 'desktop/go.sum' }}
+      - name: ndk
+        id: ndk
+        if: ${{ matrix.platform == 'android' }}
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+          #local-cache: true
+          local-cache: false # https://github.com/nttld/setup-ndk/issues/518
+      - name: build
+        run: |
+          if [[ '${{ matrix.platform }}' == 'android' ]]; then
+            make lib_${{ matrix.platform }}_${{ matrix.arch }} VERSION=${{ inputs.version }} ANDROID_NDK_HOME=${{ steps.ndk.outputs.ndk-path }}
+          else
+            make lib_${{ matrix.platform }}_${{ matrix.arch }} VERSION=${{ inputs.version }}
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libsingbox_${{ matrix.platform }}_${{ matrix.arch }}_${{ inputs.version }}
+          path: ${{ matrix.platform == 'android' && format('build/libsingbox_{0}.aar', inputs.version) || format('build/libsingbox_{0}_{1}_{2}.so', matrix.platform, matrix.arch, inputs.version) }}
+          overwrite: true

@@ -1,0 +1,247 @@
+name: Build client
+on: 
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        type: string
+      lib_version:
+        required: true
+        type: choice
+        options:
+          - 1.9.0
+      debug:
+        required: false
+        type: boolean
+        default: false
+      run_id:
+        required: true
+        type: string
+      platform:
+        required: true
+        type: choice
+        options:
+          - windows
+          - macos_arm64
+          - macos_amd64
+          - linux
+          - android
+          - all
+
+env:
+  FLUTTER_VERSION: 3.22.x
+
+jobs:
+  build-windows:
+    if: ${{ inputs.platform == 'windows' || inputs.platform == 'all' }}
+    runs-on: windows-latest
+    steps:
+      - name: Clone siren
+        uses: actions/checkout@v4
+        with:
+          repository: intxff/siren
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: Set up flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: false 
+      - name: build
+        if: ${{ !inputs.debug }}
+        run: |
+          make windows
+      - name: download libsingbox
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: main.yml
+          run_id: ${{ inputs.run_id }}
+          name: ${{ format('libsingbox_windows_amd64_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: debug 
+        if: ${{ inputs.debug }}
+        uses: mxschmitt/action-tmate@v3
+      - name: pack
+        if: ${{ !inputs.debug }}
+        shell: pwsh
+        run: |
+          mv ".\libsingbox_windows_amd64_${{ inputs.lib_version }}.so" ".\build\windows\x64\runner\Release\libsingbox.so"
+          dart run msix:build
+          dart run msix:pack
+      - name: upload msix package
+        if: ${{ !inputs.debug }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Siren_windows_amd64_${{ inputs.version }}
+          path: ./Siren.msix
+          overwrite: true
+
+  build-linux:
+    if: ${{ inputs.platform == 'linux' || inputs.platform == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone siren
+        uses: actions/checkout@v4
+        with:
+          repository: intxff/siren
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: Set up flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: false 
+      - name: build
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build libgtk-3-dev
+          make linux
+      - name: prepare libsingbox.so
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: main.yml
+          run_id: ${{ inputs.run_id }}
+          name: ${{ format('libsingbox_linux_amd64_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: pack
+        run: |
+          sudo apt install -y dpkg patchelf
+          mv "libsingbox_linux_amd64_${{ inputs.lib_version }}.so" "build/linux/x64/release/bundle/lib/libsingbox.so"
+          patchelf --set-rpath './lib' 'build/linux/x64/release/bundle/siren'
+          make deb VERSION=${{ inputs.version }}
+      - name: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Siren_linux_amd64_${{ inputs.version }}
+          path: ${{ format('siren_linux_amd64_{0}.deb', inputs.version) }}
+          overwrite: true
+
+  build-android:
+    if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone siren
+        uses: actions/checkout@v4
+        with:
+          repository: intxff/siren
+          token: ${{ secrets.ACTION_TOKEN }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+      - name: Set up flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: false 
+      - name: prepare libsingbox.aar
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: main.yml
+          run_id: ${{ inputs.run_id }}
+          name: ${{ format('libsingbox_android_aar_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: build
+        run: |
+          mkdir -p 'android/app/libs'
+          cp 'libsingbox_${{ inputs.lib_version }}.aar' 'android/app/libs/libsingbox.aar'
+          make android
+      - name: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Siren_android_${{ inputs.version }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          overwrite: true
+
+  build-macos-amd64:
+    if: ${{ inputs.platform == 'macos_amd64' || inputs.platform == 'all' }}
+    runs-on: macos-13
+    steps:
+      - name: Clone siren
+        uses: actions/checkout@v4
+        with:
+          repository: intxff/siren
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: Set up flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: false 
+      - name: prepare libsingbox_amd64.so
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: main.yml
+          run_id: ${{ inputs.run_id }}
+          name: ${{ format('libsingbox_macos_amd64_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: prepare libsingbox_arm64.so
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: main.yml
+          run_id: ${{ inputs.run_id }}
+          name: ${{ format('libsingbox_macos_arm64_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: debug
+        if: ${{ inputs.debug }}
+        uses: mxschmitt/action-tmate@v3
+      - name: build
+        if: ${{ !inputs.debug }}
+        run: |
+          mv libsingbox_macos_amd64_${{ inputs.lib_version }}.so 'assets/build/macos/libsingbox.so'
+          make macos
+      - name: upload amd64
+        if: ${{ inputs.debug }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Siren_macos_amd64_${{ inputs.version }}
+          path: 'siren_amd64.app'
+          overwrite: true
+      - name: upload arm64
+        if: ${{ inputs.debug }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Siren_macos_arm64_${{ inputs.version }}
+          path: 'siren_arm64.app'
+          overwrite: true
+      - name: upload
+        if: ${{ !inputs.debug }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Siren_macos_amd64_${{ inputs.version }}
+          path: 'build/macos/Build/Products/Release/siren.app'
+          overwrite: true
+
+  build-macos-arm64:
+    if: ${{ inputs.platform == 'macos_arm64' || inputs.platform == 'all' }}
+    runs-on: macos-latest
+    steps:
+      - name: Clone siren
+        uses: actions/checkout@v4
+        with:
+          repository: intxff/siren
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: Set up flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: false 
+      - name: prepare libsingbox.so
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: main.yml
+          run_id: ${{ inputs.run_id }}
+          name: ${{ format('libsingbox_macos_arm64_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: build
+        run: |
+          mv libsingbox_macos_arm64_${{ inputs.lib_version }}.so 'assets/build/macos/libsingbox.so'
+          make macos
+      - name: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Siren_macos_arm64_${{ inputs.version }}
+          path: 'build/macos/Build/Products/Release/siren.app'
+          overwrite: true
