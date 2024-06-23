@@ -1,0 +1,24 @@
+name: Tools
+on: 
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: intxff/sing-users
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      - name: build
+        run: |
+          go build -v -o tool main.go
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tool
+          path: tool
+          overwrite: true
