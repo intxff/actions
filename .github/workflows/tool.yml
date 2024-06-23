@@ -1,4 +1,4 @@
-name: Tools
+name: Tool
 on: 
   workflow_dispatch:
 
@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: intxff/sing-users
+          repository: intxff/siren-users
           token: ${{ secrets.ACTION_TOKEN }}
       - name: go
         uses: actions/setup-go@v5
