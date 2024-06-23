@@ -71,10 +71,10 @@ jobs:
           run_id: ${{ inputs.run_id }}
           name: ${{ format('libsingbox_windows_amd64_{0}', inputs.lib_version) }}
           github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: debug 
+        if: ${{ inputs.debug }}
+        uses: mxschmitt/action-tmate@v3
       - name: compile client
         run: |
           cd siren
           make ci_windows LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=${{ matrix.pkg }}
-      - name: debug 
-        if: ${{ inputs.debug }}
-        uses: mxschmitt/action-tmate@v3
