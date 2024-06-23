@@ -45,16 +45,15 @@ jobs:
       - name: Clone siren
         uses: actions/checkout@v4
         with:
+          path: siren
           repository: intxff/siren
           token: ${{ secrets.ACTION_TOKEN }}
       - name: Clone siren-users
         uses: actions/checkout@v4
         with:
+          path: siren-users
           repository: intxff/siren-users
           token: ${{ secrets.ACTION_TOKEN }}
-      - name: back to siren
-        run: |
-          cd ..
       - name: debug 
         if: ${{ inputs.debug }}
         uses: mxschmitt/action-tmate@v3
