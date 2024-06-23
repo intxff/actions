@@ -11,8 +11,6 @@ on:
         options:
           - 0.11.0
 
-env:
-
 jobs:
   build:
     strategy:
