@@ -17,7 +17,10 @@ on:
         required: false
         type: boolean
         default: false
-      run_id:
+      lib_run_id:
+        required: true
+        type: string
+      tool_run_id:
         required: true
         type: string
       platform:
@@ -68,8 +71,15 @@ jobs:
         uses: dawidd6/action-download-artifact@v5
         with:
           workflow: libs.yml
-          run_id: ${{ inputs.run_id }}
+          run_id: ${{ inputs.lib_run_id }}
           name: ${{ format('libsingbox_windows_amd64_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: download tool
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: tool.yml
+          run_id: ${{ inputs.tool_run_id }}
+          name: tool
           github_token: ${{ secrets.ACTION_TOKEN }}
       - name: compile client
         run: |
