@@ -64,6 +64,17 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: "siren-users/go.mod"
+      - name: download libsingbox
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: libs.yml
+          run_id: ${{ inputs.run_id }}
+          name: ${{ format('libsingbox_windows_amd64_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: compile client
+        run: |
+          cd siren
+          make ci_windows LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=${{ matrix.pkg }}
       - name: debug 
         if: ${{ inputs.debug }}
         uses: mxschmitt/action-tmate@v3
