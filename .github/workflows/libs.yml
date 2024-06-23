@@ -1,4 +1,4 @@
-name: Build Sing Libraries
+name: Build Singbox Libraries
 on: 
   workflow_dispatch:
     inputs:
@@ -10,7 +10,6 @@ on:
         type: choice
         options:
           - 0.11.0
-          - 0.12.0
 
 env:
 
