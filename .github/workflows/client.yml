@@ -1,0 +1,70 @@
+name: Client
+on: 
+  workflow_dispatch:
+    inputs:
+      user:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      lib_version:
+        required: true
+        type: choice
+        options:
+          - 1.9.0
+      debug:
+        required: false
+        type: boolean
+        default: false
+      run_id:
+        required: true
+        type: string
+      platform:
+        required: true
+        type: choice
+        options:
+          - windows
+          - macos
+          - linux
+          - android
+          - all
+
+env:
+  FLUTTER_VERSION: 3.22.x
+
+jobs:
+  build-windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        pkg: [zip, msix]
+    if: ${{ inputs.platform == 'windows' || inputs.platform == 'all' }}
+    runs-on: windows-latest
+    steps:
+      - name: Clone siren
+        uses: actions/checkout@v4
+        with:
+          repository: intxff/siren
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: Clone siren-users
+        uses: actions/checkout@v4
+        with:
+          repository: intxff/siren-users
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: back to siren
+        run: |
+          cd ..
+      - name: Set up flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: false 
+      - name: Set up go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "siren-users/go.mod"
+      - name: debug 
+        if: ${{ inputs.debug }}
+        uses: mxschmitt/action-tmate@v3
