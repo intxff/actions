@@ -54,9 +54,6 @@ jobs:
           path: siren-users
           repository: intxff/siren-users
           token: ${{ secrets.ACTION_TOKEN }}
-      - name: debug 
-        if: ${{ inputs.debug }}
-        uses: mxschmitt/action-tmate@v3
       - name: Set up flutter
         uses: subosito/flutter-action@v2
         with:
@@ -67,3 +64,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: "siren-users/go.mod"
+      - name: debug 
+        if: ${{ inputs.debug }}
+        uses: mxschmitt/action-tmate@v3
