@@ -1,5 +1,5 @@
 name: Client
-run-name: ${{ inputs.user }}'s client
+run-name: ${{ inputs.user }}'s clients -- ${{ inputs.platform }}
 on: 
   workflow_dispatch:
     inputs:
