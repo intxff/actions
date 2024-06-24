@@ -1,4 +1,5 @@
 name: Client
+run-name: ${{ inputs.user }}'s client
 on: 
   workflow_dispatch:
     inputs:
@@ -77,7 +78,7 @@ jobs:
           github_token: ${{ secrets.ACTION_TOKEN }}
       - name: compile client
         run: |
-          make ci_windows LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=${{ matrix.pkg }}
+          make ci_windows LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=${{ matrix.pkg }} USER=${{ inputs.user }}
       - name: debug 
         if: ${{ inputs.debug }}
         uses: mxschmitt/action-tmate@v3
@@ -90,21 +91,21 @@ jobs:
         if: ${{ matrix.pkg == 'msix' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
+          name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }_${{ inputs.user }}}
           path: ./siren/siren.msix
           overwrite: true
       - name: upload zip package
         if: ${{ matrix.pkg == 'zip' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
+          name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
           path: ./siren/build/windows/x64/runner/Release
           overwrite: true
       - name: upload debug symbol
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}_symbol
-          path: ./siren/Siren_${{ inputs.user }}_windows_${{ inputs.version }}_${{ matrix.pkg }}
+          name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}_symbol
+          path: ./siren/siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}_symbol
           overwrite: true
 
   build-linux:
@@ -146,31 +147,87 @@ jobs:
           github_token: ${{ secrets.ACTION_TOKEN }}
       - name: compile client
         run: |
-          make ci_linux LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=${{ matrix.pkg }}
+          make ci_linux LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=${{ matrix.pkg }} USER=${{ inputs.user }}
       - name: debug 
         if: ${{ inputs.debug }}
         uses: mxschmitt/action-tmate@v3
       - name: pack deb 
         if: ${{ matrix.pkg == 'deb' }}
         run: |
-          make ci_deb VERSION=${{ inputs.version }}
+          make ci_deb VERSION=${{ inputs.version }} USER=${{ inputs.user }}
       - name: upload deb package
         if: ${{ matrix.pkg == 'deb' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_linux_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
+          name: siren_linux_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
           path: ./siren/siren.deb
           overwrite: true
       - name: upload zip package
         if: ${{ matrix.pkg == 'zip' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_linux_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
+          name: siren_linux_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
           path: ./siren/build/linux/x64/release/bundle
           overwrite: true
       - name: upload debug symbol
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_linux_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}_symbol
-          path: ./siren/Siren_${{ inputs.user }}_linux_${{ inputs.version }}_${{ matrix.pkg }}
+          name: siren_linux_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}_symbol
+          path: ./siren/siren_linux_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}_symbol
+          overwrite: true
+
+  build-android:
+    if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone siren
+        uses: actions/checkout@v4
+        with:
+          path: siren
+          repository: intxff/siren
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: Clone siren-users
+        uses: actions/checkout@v4
+        with:
+          path: siren-users
+          repository: intxff/siren-users
+          token: ${{ secrets.ACTION_TOKEN }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+      - name: Set up flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: false 
+      - name: Set up go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "siren-users/go.mod"
+      - name: download libsingbox
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: libs.yml
+          run_id: ${{ inputs.lib_run_id }}
+          name: ${{ format('libsingbox_android_aar_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: compile client
+        run: |
+          make ci_android LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=apk USER=${{ inputs.user }}
+      - name: debug 
+        if: ${{ inputs.debug }}
+        uses: mxschmitt/action-tmate@v3
+      - name: upload apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: siren_android_${{ inputs.version }}_apk_${{ inputs.user }}
+          path: ./siren/build/app/outputs/flutter-apk/app-release.apk
+          overwrite: true
+      - name: upload debug symbol
+        uses: actions/upload-artifact@v4
+        with:
+          name: siren_android_${{ inputs.version }}_apk_${{ inputs.user }}_symbol
+          path: ./siren/siren_android_${{ inputs.version }}_apk_${{ inputs.user }}_symbol
           overwrite: true
