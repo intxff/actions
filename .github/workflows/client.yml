@@ -90,20 +90,20 @@ jobs:
         if: ${{ matrix.pkg == 'msix' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}.msix
+          name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
           path: ./siren/Siren.msix
           overwrite: true
       - name: upload zip package
         if: ${{ matrix.pkg == 'zip' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}.zip
+          name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
           path: ./siren/build/windows/x64/runner/Release
           overwrite: true
       - name: upload debug symbol
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
+          name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}_symbol
           path: ./siren/Siren_${{ inputs.user }}_windows_${{ inputs.version }}_${{ matrix.pkg }}
           overwrite: true
 
@@ -158,19 +158,19 @@ jobs:
         if: ${{ matrix.pkg == 'deb' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_linux_amd64_${{ inputs.version }}_${{ inputs.user }}.deb
+          name: Siren_linux_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
           path: ./siren/Siren.deb
           overwrite: true
       - name: upload zip package
         if: ${{ matrix.pkg == 'zip' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_linux_amd64_${{ inputs.version }}_${{ inputs.user }}.zip
+          name: Siren_linux_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
           path: ./siren/build/linux/x64/release/bundle
           overwrite: true
       - name: upload debug symbol
         uses: actions/upload-artifact@v4
         with:
-          name: Siren_linux_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
+          name: Siren_linux_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}_symbol
           path: ./siren/Siren_${{ inputs.user }}_linux_${{ inputs.version }}_${{ matrix.pkg }}
           overwrite: true
