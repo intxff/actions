@@ -91,7 +91,7 @@ jobs:
         if: ${{ matrix.pkg == 'msix' }}
         uses: actions/upload-artifact@v4
         with:
-          name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }_${{ inputs.user }}}
+          name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
           path: ./siren/siren.msix
           overwrite: true
       - name: upload zip package
