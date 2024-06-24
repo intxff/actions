@@ -153,8 +153,6 @@ jobs:
       - name: pack deb 
         if: ${{ matrix.pkg == 'deb' }}
         run: |
-          sudo apt install -y dpkg patchelf
-          patchelf --set-rpath './lib' 'build/linux/x64/release/bundle/siren'
           make ci_deb VERSION=${{ inputs.version }}
       - name: upload deb package
         if: ${{ matrix.pkg == 'deb' }}
