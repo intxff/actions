@@ -30,6 +30,10 @@ on:
           - android
           - all
 
+defaults:
+  run:
+    working-directory: ./siren
+
 env:
   FLUTTER_VERSION: 3.22.x
 
@@ -73,7 +77,6 @@ jobs:
           github_token: ${{ secrets.ACTION_TOKEN }}
       - name: compile client
         run: |
-          cd siren
           make ci_windows LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=${{ matrix.pkg }}
       - name: debug 
         if: ${{ inputs.debug }}
@@ -103,6 +106,7 @@ jobs:
           name: Siren_windows_amd64_${{ inputs.version }}_${{ inputs.user }}_${{ matrix.pkg }}
           path: ./Siren_${{ inputs.user }}_windows_${{ inputs.version }}_${{ matrix.pkg }}
           overwrite: true
+
   build-linux:
     strategy:
       fail-fast: false
