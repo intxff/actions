@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: ${{ matrix.platform == 'android' && 'android/go.mod' || 'desktop/go.mod' }}
-          cache-dependency-path: ${{ matrix.platform == 'android' && 'android/go.sum' || 'desktop/go.sum' }}
+          #cache-dependency-path: ${{ matrix.platform == 'android' && 'android/go.sum' || 'desktop/go.sum' }}
       - name: ndk
         id: ndk
         if: ${{ matrix.platform == 'android' }}
