@@ -231,3 +231,56 @@ jobs:
           name: siren_android_${{ inputs.version }}_apk_${{ inputs.user }}_symbol
           path: ./siren/siren_android_${{ inputs.version }}_apk_${{ inputs.user }}_symbol
           overwrite: true
+
+  build-macos:
+    if: ${{ inputs.platform == 'macos' || inputs.platform == 'all' }}
+    runs-on: macos-latest
+    steps:
+      - name: Clone siren
+        uses: actions/checkout@v4
+        with:
+          path: siren
+          repository: intxff/siren
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: Clone siren-users
+        uses: actions/checkout@v4
+        with:
+          path: siren-users
+          repository: intxff/siren-users
+          token: ${{ secrets.ACTION_TOKEN }}
+      - name: Set up flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: false 
+      - name: Set up go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "siren-users/go.mod"
+      - name: download libsingbox amd64
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: libs.yml
+          run_id: ${{ inputs.lib_run_id }}
+          name: ${{ format('libsingbox_macos_amd64_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: download libsingbox arm64
+        uses: dawidd6/action-download-artifact@v5
+        with:
+          workflow: libs.yml
+          run_id: ${{ inputs.lib_run_id }}
+          name: ${{ format('libsingbox_macos_arm64_{0}', inputs.lib_version) }}
+          github_token: ${{ secrets.ACTION_TOKEN }}
+      - name: compile client
+        run: |
+          make ci_macos LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=pkg USER=${{ inputs.user }}
+      - name: debug 
+        if: ${{ inputs.debug }}
+        uses: mxschmitt/action-tmate@v3
+      - name: upload debug symbol
+        uses: actions/upload-artifact@v4
+        with:
+          name: siren_macos_${{ inputs.version }}_pkg_${{ inputs.user }}_symbol
+          path: ./siren/siren_macos_${{ inputs.version }}_pkg_${{ inputs.user }}_symbol
+          overwrite: true
