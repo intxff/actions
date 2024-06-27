@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pkg: [zip, msix]
+        pkg: [zip, msix, exe]
     if: ${{ inputs.platform == 'windows' || inputs.platform == 'all' }}
     runs-on: windows-latest
     steps:
@@ -93,6 +93,19 @@ jobs:
         with:
           name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
           path: ./siren/siren.msix
+          overwrite: true
+      - name: pack exe
+        if: ${{ matrix.pkg == 'exe' }}
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.4
+        with:
+          path: ./siren/build/windows/x64/runner/Release/siren.iss
+          options: /O"./siren"
+      - name: upload exe
+        if: ${{ matrix.pkg == 'exe' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
+          path: ./siren/siren_setup.exe
           overwrite: true
       - name: upload zip package
         if: ${{ matrix.pkg == 'zip' }}
