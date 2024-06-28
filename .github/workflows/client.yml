@@ -80,6 +80,7 @@ jobs:
         if: ${{ inputs.debug }}
         uses: mxschmitt/action-tmate@v3
       - name: compile client
+        shell: bash
         run: |
           make ci_windows LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=${{ matrix.pkg }} USER=${{ inputs.user }}
       - name: debug 
