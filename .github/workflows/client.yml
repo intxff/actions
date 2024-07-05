@@ -294,7 +294,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: siren_macos_${{ inputs.version }}_app_${{ inputs.user }}
-          path: ./siren/build/macos/Build/Products/Release/siren.app
+          path: ./siren/siren.app
           overwrite: true
       - name: upload debug symbol
         uses: actions/upload-artifact@v4
