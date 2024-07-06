@@ -21,6 +21,10 @@ on:
       lib_run_id:
         required: true
         type: string
+      branch:
+        required: false
+        type: string
+        default: main
       platform:
         required: true
         type: choice
@@ -53,6 +57,7 @@ jobs:
           path: siren
           repository: intxff/siren
           token: ${{ secrets.ACTION_TOKEN }}
+          ref: ${{ inputs.branch }}
       - name: Clone siren-users
         uses: actions/checkout@v4
         with:
@@ -138,6 +143,7 @@ jobs:
           path: siren
           repository: intxff/siren
           token: ${{ secrets.ACTION_TOKEN }}
+          ref: ${{ inputs.branch }}
       - name: Clone siren-users
         uses: actions/checkout@v4
         with:
@@ -198,6 +204,7 @@ jobs:
           path: siren
           repository: intxff/siren
           token: ${{ secrets.ACTION_TOKEN }}
+          ref: ${{ inputs.branch }}
       - name: Clone siren-users
         uses: actions/checkout@v4
         with:
@@ -254,6 +261,7 @@ jobs:
           path: siren
           repository: intxff/siren
           token: ${{ secrets.ACTION_TOKEN }}
+          ref: ${{ inputs.branch }}
       - name: Clone siren-users
         uses: actions/checkout@v4
         with:
