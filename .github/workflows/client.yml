@@ -294,19 +294,19 @@ jobs:
           github_token: ${{ secrets.ACTION_TOKEN }}
       - name: compile client
         run: |
-          make ci_macos LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=pkg USER=${{ inputs.user }}
+          make ci_macos LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=dmg USER=${{ inputs.user }}
       - name: debug 
         if: ${{ inputs.debug }}
         uses: mxschmitt/action-tmate@v3
-      - name: upload app
+      - name: upload dmg
         uses: actions/upload-artifact@v4
         with:
           name: siren_macos_${{ inputs.version }}_app_${{ inputs.user }}
-          path: ./siren/siren.app
+          path: ./siren/${{ inputs.user }}.dmg
           overwrite: true
       - name: upload debug symbol
         uses: actions/upload-artifact@v4
         with:
-          name: siren_macos_${{ inputs.version }}_pkg_${{ inputs.user }}_symbol
-          path: ./siren/siren_macos_${{ inputs.version }}_pkg_${{ inputs.user }}_symbol
+          name: siren_macos_${{ inputs.version }}_dmg_${{ inputs.user }}_symbol
+          path: ./siren/siren_macos_${{ inputs.version }}_dmg_${{ inputs.user }}_symbol
           overwrite: true
