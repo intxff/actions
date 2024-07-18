@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pkg: [zip, msix, exe]
+        pkg: [exe]
     if: ${{ inputs.platform == 'windows' || inputs.platform == 'all' }}
     runs-on: windows-latest
     steps:
@@ -90,18 +90,6 @@ jobs:
       - name: debug 
         if: ${{ inputs.debug }}
         uses: mxschmitt/action-tmate@v3
-      - name: pack msix
-        if: ${{ matrix.pkg == 'msix' }}
-        run: |
-          dart run msix:build
-          dart run msix:pack
-      - name: upload msix package
-        if: ${{ matrix.pkg == 'msix' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
-          path: ./siren/siren.msix
-          overwrite: true
       - name: pack exe
         if: ${{ matrix.pkg == 'exe' }}
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.4
@@ -115,13 +103,6 @@ jobs:
           name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
           path: ./siren/siren_setup.exe
           overwrite: true
-      - name: upload zip package
-        if: ${{ matrix.pkg == 'zip' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: siren_windows_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
-          path: ./siren/build/windows/x64/runner/Release
-          overwrite: true
       - name: upload debug symbol
         uses: actions/upload-artifact@v4
         with:
@@ -133,7 +114,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pkg: [zip, deb]
+        pkg: [zip]
     if: ${{ inputs.platform == 'linux' || inputs.platform == 'all' }}
     runs-on: ubuntu-latest
     steps:
@@ -173,13 +154,6 @@ jobs:
       - name: compile client
         run: |
           make ci_linux LIB_VERSION=${{ inputs.lib_version }} VERSION=${{ inputs.version }} PKG=${{ matrix.pkg }} USER=${{ inputs.user }}
-      - name: upload deb package
-        if: ${{ matrix.pkg == 'deb' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: siren_linux_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}
-          path: ./siren/siren.deb
-          overwrite: true
       - name: upload zip package
         if: ${{ matrix.pkg == 'zip' }}
         uses: actions/upload-artifact@v4

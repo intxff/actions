@@ -1,4 +1,4 @@
-name: Build Singbox Libraries
+name: Library
 on: 
   workflow_dispatch:
     inputs:
