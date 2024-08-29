@@ -38,6 +38,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: ${{ matrix.platform == 'android' && 'android/go.mod' || 'desktop/go.mod' }}
+          check-latest: true
           #cache-dependency-path: ${{ matrix.platform == 'android' && 'android/go.sum' || 'desktop/go.sum' }}
       - name: ndk
         id: ndk
@@ -70,6 +71,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: 'desktop/go.mod'
+          check-latest: true
       - name: build
         run: |
           make lib_macos_amd64 VERSION=${{ inputs.version }}
@@ -89,6 +91,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: 'desktop/go.mod'
+          check-latest: true
       - name: build
         run: |
           make lib_macos_arm64 VERSION=${{ inputs.version }}
