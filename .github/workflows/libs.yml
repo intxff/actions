@@ -61,7 +61,7 @@ jobs:
           path: ${{ matrix.platform == 'android' && format('build/libsingbox_{0}.aar', inputs.version) || format('build/libsingbox_{0}_{1}_{2}.so', matrix.platform, matrix.arch, inputs.version) }}
           overwrite: true
   macos-amd64:
-    runs-on: macos-latest-large
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
         with:
