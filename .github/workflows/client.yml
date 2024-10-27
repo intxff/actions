@@ -147,12 +147,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: "siren-users/go.mod"
-      - uses: actions/setup-node@v4
-        with:
-          version: 22.5.1
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.6.0
       - name: download libsingbox
         uses: dawidd6/action-download-artifact@v5
         with:
@@ -178,12 +172,6 @@ jobs:
         with:
           name: siren_linux_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}_symbol
           path: ./siren/siren_linux_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}_symbol
-          overwrite: true
-      - name: upload sirenapi
-        uses: actions/upload-artifact@v4
-        with:
-          name: sirenapi_${{ inputs.version }}_${{ inputs.user }}
-          path: ./apiserver/build
           overwrite: true
 
   build-android:
