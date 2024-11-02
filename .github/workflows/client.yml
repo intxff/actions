@@ -125,11 +125,11 @@ jobs:
           repository: intxff/siren
           token: ${{ secrets.ACTION_TOKEN }}
           ref: ${{ inputs.branch }}
-      - name: Clone siren apiserver
+      - name: Clone sirenapi
         uses: actions/checkout@v4
         with:
-          path: apiserver
-          repository: intxff/siren-apiserver
+          path: sirenapi
+          repository: intxff/sirenapi
           token: ${{ secrets.ACTION_TOKEN }}
       - name: Clone siren-users
         uses: actions/checkout@v4
@@ -172,6 +172,18 @@ jobs:
         with:
           name: siren_linux_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}_symbol
           path: ./siren/siren_linux_amd64_${{ inputs.version }}_${{ matrix.pkg }}_${{ inputs.user }}_symbol
+          overwrite: true
+      - name: upload sirenapi-auth
+        uses: actions/upload-artifact@v4
+        with:
+          name: sirenapi-auth_${{ inputs.version }}_${{ inputs.user }}
+          path: ./sirenapi/auth/build
+          overwrite: true
+      - name: upload sirenapi-sub
+        uses: actions/upload-artifact@v4
+        with:
+          name: sirenapi-sub_${{ inputs.version }}_${{ inputs.user }}
+          path: ./sirenapi/sub/build
           overwrite: true
 
   build-android:
@@ -290,3 +302,5 @@ jobs:
           name: siren_macos_${{ inputs.version }}_dmg_${{ inputs.user }}_symbol
           path: ./siren/siren_macos_${{ inputs.version }}_dmg_${{ inputs.user }}_symbol
           overwrite: true
+
+  
